@@ -17,7 +17,7 @@ from flask_wtf import Form
 from flask_migrate import Migrate
 from forms import *
 from datetime import date
-from models import Venue, Artist, Show
+from models import Venue, Artist, Show, db
 
 
 # ----------------------------------------------------------------------------#
@@ -28,7 +28,7 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+db.init_app(app)
 
 # TODO: connect to a local postgresql database
 migrate = Migrate(app, db)
@@ -177,19 +177,20 @@ def create_venue_submission():
     # TODO: modify data to be the data object returned from db insertion
 
     error = False
+    form = VenueForm(request.form)
     try:
         venue = Venue(
-            name=request.form['name'],
-            city=request.form['city'],
-            state=request.form['state'],
-            address=request.form['address'],
-            phone=request.form['phone'],
+            name=form.name.data,
+            city=form.city.data,
+            state=form.state.data,
+            address=form.address.data,
+            phone=form.phone.data,
             genres=request.form.getlist('genres'),
-            facebook_link=request.form['facebook_link'],
-            image_link=request.form['image_link'],
-            website=request.form['website_link'],
-            seeking_talent=request.form['seeking_talent'],
-            seeking_description=request.form['seeking_description']
+            facebook_link=form.facebook_link.data,
+            image_link=form.image_link.data,
+            website=form.website_link.data,
+            seeking_talent=form.seeking_talent.data,
+            seeking_description=form.seeking_description.data
         )
         db.session.add(venue)
         db.session.commit()
@@ -262,7 +263,7 @@ def show_artist(artist_id):
         "image_link": artist.image_link,
         "genres": artist.genres,
         "facebook_link": artist.facebook_link,
-        "website_link": artist.website_link,
+        "website": artist.website_link,
         "seeking_description": artist.seeking_description,
         "seeking_venue": artist.seeking_venue,
         "past_shows": [],
@@ -436,7 +437,7 @@ def create_artist_submission():
             image_link=form.image_link.data,
             website_link=form.website_link.data,
             seeking_venue=form.seeking_venue.data,
-            seeking_description=form.seeking_description.data,
+            seeking_description=form.seeking_description.data
         )
         db.session.add(artist)
         db.session.commit()
